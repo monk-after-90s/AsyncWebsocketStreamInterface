@@ -63,29 +63,32 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
             self._ws_exchanged.set()
 
     async def _handle_raw_ws_msg(self, ws: websockets.WebSocketClientProtocol):
-        async for msg in ws:
-            try:
-                # logger.debug(repr(old_ws_update_ws_task))
-                msg = await self._parse_raw_data(msg)
-                logger.debug(
-                    '\n' + beeprint.pp(msg, output=False, string_break_enable=False, sort_keys=False))
-                # logger.debug('\n' + repr(self._update_ws_task))
-                tasks = []
-                for handler in self._handlers:
-                    if asyncio.iscoroutinefunction(handler):
-                        tasks.append(asyncio.create_task(handler(deepcopy(msg))))
-                    else:
+        try:
+            async for msg in ws:
+                try:
+                    # logger.debug(repr(old_ws_update_ws_task))
+                    msg = await self._parse_raw_data(msg)
+                    logger.debug(
+                        '\n' + beeprint.pp(msg, output=False, string_break_enable=False, sort_keys=False))
+                    # logger.debug('\n' + repr(self._update_ws_task))
+                    tasks = []
+                    for handler in self._handlers:
+                        if asyncio.iscoroutinefunction(handler):
+                            tasks.append(asyncio.create_task(handler(deepcopy(msg))))
+                        else:
+                            try:
+                                handler(deepcopy(msg))
+                            except:
+                                pass
+                    for task in tasks:
                         try:
-                            handler(deepcopy(msg))
+                            await task
                         except:
                             pass
-                for task in tasks:
-                    try:
-                        await task
-                    except:
-                        pass
-            except:
-                logger.error('\n' + traceback.format_exc())
+                except:
+                    logger.error('\n' + traceback.format_exc())
+        finally:
+            logger.debug('Old connection abandoned.')
 
     @abstractmethod
     async def _parse_raw_data(self, raw_data):
