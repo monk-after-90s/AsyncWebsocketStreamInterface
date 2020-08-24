@@ -23,6 +23,7 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
         asyncio.create_task(asyncio.shield(self._ws_manager()))
         self._handlers = set()
         self._ws_exchanged = asyncio.Event()
+        self._ws_exchanged.set()
 
     # log_path = '/tmp/db.log'
     #
@@ -127,6 +128,7 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
         asyncio.create_task(asyncio.shield(self._handle_wsq()))
         # 初始创建一个ws连接
         self._wsq.put_nowait(await self._create_ws())
+        await self._ws_exchanged.wait()
         while not self._exiting:
             # 等待需要更新连接的信号
             await self._when2create_new_ws()
