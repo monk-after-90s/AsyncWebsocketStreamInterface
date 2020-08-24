@@ -20,7 +20,7 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
         self._wsq.present_ws: websockets.WebSocketClientProtocol = None
         self._wsq.previous_ws: websockets.WebSocketClientProtocol = None
         self._exiting = False
-        asyncio.create_task(self._ws_manager())
+        asyncio.create_task(asyncio.shield(self._ws_manager()))
         self._handlers = set()
         self._ws_exchanged = asyncio.Event()
 
@@ -121,7 +121,7 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
 
     async def _ws_manager(self):
         # 启动ws连接队列的消息对接handlers处理任务
-        asyncio.create_task(self._handle_wsq())
+        asyncio.create_task(asyncio.shield(self._handle_wsq()))
         # 初始创建一个ws连接
         self._wsq.put_nowait(await self._create_ws())
         while not self._exiting:
