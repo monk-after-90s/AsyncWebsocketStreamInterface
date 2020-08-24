@@ -181,8 +181,9 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
         ag.close = close
         return ag
 
+    def add_handler(self, function_or_coroutine_funtion):
+        self._handlers.add(function_or_coroutine_funtion)
 
-# todo add_handler
 
 if __name__ == '__main__':
     class C(AsyncWebsocketStreamInterface):
