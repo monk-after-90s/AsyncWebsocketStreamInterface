@@ -7,6 +7,7 @@ import beeprint
 import websockets
 from ensureTaskCanceled import ensureTaskCanceled
 from loguru import logger
+from NoLossAsyncGenerator import NoLossAsyncGenerator
 
 
 class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
@@ -138,9 +139,50 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
             # if not self._instantiate_ok.done():
             #     self._instantiate_ok.set_result(None)
 
+    def stream_filter(self, _filters: list = None):
+        '''
+        Filter the ws data stream and push the filtered data copy to the async generator which is returned by the method.
+        Remember to explicitly call the close method of the async generator to close the stream.
 
-# todo  stream_filter 初始ws
 
+        stream=huobiasyncws.filter_stream()
+
+        #handle message in one coroutine:
+        async for news in stream:
+            ...
+        #close the stream in another:
+        close_task=asyncio.create_task(stream.close())
+        ...
+        await close_task
+
+
+        :param _filters:A list of dictionaries, key and value of any of which could all be matched by some message, then the message would be filtered.
+        :return:
+        '''
+        if _filters is None:
+            _filters = []
+
+        ag = NoLossAsyncGenerator(None)
+
+        def handler(msg):
+            if (_filters and any(
+                    [all([((key in msg) and (value == msg[key])) for key, value in _filter.items()]) for _filter in
+                     _filters])) \
+                    or not _filters:
+                ag.q.put_nowait(msg)
+
+        self._handlers.add(handler)
+        _close = ag.close
+
+        async def close():
+            self._handlers.remove(handler)
+            await _close()
+
+        ag.close = close
+        return ag
+
+
+# todo add_handler
 
 if __name__ == '__main__':
     class C(AsyncWebsocketStreamInterface):
