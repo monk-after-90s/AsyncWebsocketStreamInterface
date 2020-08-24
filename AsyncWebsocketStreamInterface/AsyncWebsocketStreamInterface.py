@@ -132,10 +132,11 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
         while not self._exiting:
             # 等待需要更新连接的信号
             await self._when2create_new_ws()
+            new_ws = await self._create_ws()
             # reset exchange ok event
             self._ws_exchanged.clear()
             # 更新连接
-            self._wsq.put_nowait(await self._create_ws())
+            self._wsq.put_nowait(new_ws)
             # wait until ws is exchanged.
             await self._ws_exchanged.wait()
             logger.debug('New ws connection opened.')
