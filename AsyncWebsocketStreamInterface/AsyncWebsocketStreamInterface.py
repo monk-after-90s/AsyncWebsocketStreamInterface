@@ -80,33 +80,12 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
         finally:
             logger.debug('Old connection abandoned.')
 
-    @abstractmethod
-    async def _parse_raw_data(self, raw_data):
-        pass
-
     @property
     def ws(self):
         return self._wsq.present_ws
 
     async def send(self, msg):
         await self.ws.send(msg)
-
-    @abstractmethod
-    async def _create_ws(self):
-        '''
-        Create a websockets connection.
-
-        :return:websockets ws instance just created.
-        '''
-        pass
-
-    @abstractmethod
-    async def _when2create_new_ws(self):
-        '''
-        One time check to notice that it is time to exchange the ws.
-        :return:
-        '''
-        pass
 
     async def exit(self):
         self._exiting = True
@@ -174,6 +153,27 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
 
     def add_handler(self, function_or_coroutine_funtion):
         self._handlers.add(function_or_coroutine_funtion)
+
+    @abstractmethod
+    async def _parse_raw_data(self, raw_data):
+        pass
+
+    @abstractmethod
+    async def _create_ws(self):
+        '''
+        Create a websockets connection.
+
+        :return:websockets ws instance just created.
+        '''
+        pass
+
+    @abstractmethod
+    async def _when2create_new_ws(self):
+        '''
+        One time check to notice that it is time to exchange the ws.
+        :return:
+        '''
+        pass
 
 
 if __name__ == '__main__':
