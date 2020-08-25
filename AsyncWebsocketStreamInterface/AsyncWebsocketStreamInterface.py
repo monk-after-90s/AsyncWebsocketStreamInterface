@@ -154,6 +154,9 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
     def add_handler(self, function_or_coroutine_funtion):
         self._handlers.add(function_or_coroutine_funtion)
 
+    async def wait_enter_handing_ws(self):
+        await AsyncExclusivePeriod.wait_enter_period(self, 'handing_ws')
+
     @abstractmethod
     async def _parse_raw_data(self, raw_data):
         pass
