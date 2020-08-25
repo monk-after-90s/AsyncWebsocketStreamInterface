@@ -81,11 +81,11 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
             logger.debug('Old connection abandoned.')
 
     @property
-    def ws(self):
+    def present_ws(self):
         return self._wsq.present_ws
 
     async def send(self, msg):
-        await self.ws.send(msg)
+        await self.present_ws.send(msg)
 
     async def exit(self):
         self._exiting = True
