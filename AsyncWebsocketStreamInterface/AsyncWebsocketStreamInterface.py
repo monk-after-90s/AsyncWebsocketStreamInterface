@@ -8,6 +8,7 @@ import websockets
 from ensureTaskCanceled import ensureTaskCanceled
 from loguru import logger
 from NoLossAsyncGenerator import NoLossAsyncGenerator
+from AsyncExclusivePeriods import AsyncExclusivePeriod
 
 
 class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
@@ -22,21 +23,9 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
         self._exiting = False
         asyncio.create_task(asyncio.shield(self._ws_manager()))
         self._handlers = set()
-        self._ws_exchanged = asyncio.Event()
-        self._ws_exchanged.set()
+        # 更换ws连接时期和处理ws数据时期，刚开始是exchanging_ws时期
+        AsyncExclusivePeriod.create_obj_periods(self, 'exchanging_ws', 'handing_ws')
 
-    # log_path = '/tmp/db.log'
-    #
-    # def connect(self):
-    #     print('connect db ...')
-    #
-    # @abstractmethod
-    # def query(self, sql):
-    #     pass
-    #
-    # @abstractmethod
-    # def update(self, sql):
-    #     pass
     async def _handle_wsq(self):
         '''
         始终使用原生ws连接队列中的最后一个
@@ -61,7 +50,7 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
                         asyncio.create_task(ensureTaskCanceled(_handle_raw_ws_msg_task))
                     break
             _handle_raw_ws_msg_task = asyncio.create_task(self._handle_raw_ws_msg(self._wsq.present_ws))
-            self._ws_exchanged.set()
+            AsyncExclusivePeriod.set_obj_period(self, 'handing_ws')
 
     async def _handle_raw_ws_msg(self, ws: websockets.WebSocketClientProtocol):
         try:
@@ -126,24 +115,20 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
     async def _ws_manager(self):
         # 启动ws连接队列的消息对接handlers处理任务
         asyncio.create_task(asyncio.shield(self._handle_wsq()))
-        # 初始创建一个ws连接
-        self._wsq.put_nowait(await self._create_ws())
-        await self._ws_exchanged.wait()
-        while not self._exiting:
-            # 等待需要更新连接的信号
-            await self._when2create_new_ws()
+        initail = True
+        while not self._exiting or initail:
+            initail = False
             new_ws = await self._create_ws()
-            # reset exchange ok event
-            self._ws_exchanged.clear()
             # 更新连接
             self._wsq.put_nowait(new_ws)
             # wait until ws is exchanged.
-            await self._ws_exchanged.wait()
+            await AsyncExclusivePeriod.wait_enter_period(self, 'handing_ws')
             logger.debug('New ws connection opened.')
 
-            # # 通知实例化完成
-            # if not self._instantiate_ok.done():
-            #     self._instantiate_ok.set_result(None)
+            # 等待需要更新连接的信号
+            await self._when2create_new_ws()
+            # 进入更换ws时期
+            AsyncExclusivePeriod.set_obj_period(self, 'exchanging_ws')
 
     def stream_filter(self, _filters: list = None):
         '''
