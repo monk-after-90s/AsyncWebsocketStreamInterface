@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="AsyncWebsocketStreamInterface",
-    version="1.0.0",
+    version="0.9.0",
     author="Antas",
     author_email="",
     description="Exchange one normal asynchronous websocket connection to unlimited number of data streams.",
