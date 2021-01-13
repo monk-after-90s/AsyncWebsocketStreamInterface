@@ -21,7 +21,7 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
         self._wsq.present_ws: websockets.WebSocketClientProtocol = None
         self._wsq.previous_ws: websockets.WebSocketClientProtocol = None
         self._exiting = False
-        asyncio.ensure_future(asyncio.shield(self._ws_manager()))
+        asyncio.create_task(self._ws_manager())
         self._handlers = set()
         # 更换ws连接时期和处理ws数据时期，刚开始是exchanging_ws时期
         AsyncExclusivePeriod.create_obj_periods(self, 'exchanging_ws', 'handing_ws')
@@ -94,7 +94,7 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
 
     async def _ws_manager(self):
         # 启动ws连接队列的消息对接handlers处理任务
-        asyncio.ensure_future(asyncio.shield(self._handle_wsq()))
+        asyncio.create_task(self._handle_wsq())
         initail = True
         while not self._exiting or initail:
             initail = False
