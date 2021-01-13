@@ -89,7 +89,8 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
 
     async def exit(self):
         self._exiting = True
-        await asyncio.create_task(self._wsq.present_ws.close())
+        if self._wsq.present_ws:
+            await asyncio.create_task(self._wsq.present_ws.close())
 
     async def _ws_manager(self):
         # 启动ws连接队列的消息对接handlers处理任务
