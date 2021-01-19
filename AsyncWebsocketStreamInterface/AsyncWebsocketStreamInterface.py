@@ -152,8 +152,8 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
         ag.close = close
         return ag
 
-    def add_handler(self, function_or_coroutine_funtion):
-        self._handlers.add(function_or_coroutine_funtion)
+    def add_handler(self, function_or_coroutine_function):
+        self._handlers.add(function_or_coroutine_function)
 
     async def wait_enter_handing_ws(self):
         await AsyncExclusivePeriod.wait_enter_period(self, 'handing_ws')
