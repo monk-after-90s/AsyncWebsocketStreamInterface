@@ -26,7 +26,7 @@ pip install AsyncWebsocketStreamInterface
 There are 3 **abstract methods** in class AsyncWebsocketStreamInterface which is enforced to be inherited: _create_ws, _
 when2create_new_ws, _parse_raw_data. In BinanceFapiAsyncWs, we implement more than these 3 mainly for these reasons:
 this websocket is private thus it needs a apiKey, and it needs to send restful request for a listenkey and to send
-heartbeats regularly to maintain a stable connection. So these relative implementation will not be discussed in extenso.
+heartbeats regularly to maintain a stable connection. So these relative implementation will not be discussed in detail.
 
 ### _create_ws
 
