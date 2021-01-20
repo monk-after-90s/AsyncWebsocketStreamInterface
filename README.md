@@ -78,7 +78,7 @@ async def _parse_raw_data(self, raw_data):
     return msg
 ```
 
-This method parse the raw date from the server to some format you wish.
+This method parse the raw data from the server to some format you wish.
 
 In our simple example, we parse the json string to the data of certain type.
 
