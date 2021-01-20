@@ -1,7 +1,7 @@
 # AsyncWebsocketStreamInterface
 
 AsyncWebsocketStreamInterface is an abstract class interface to be inherited to implement a certain asynchronous
-websocket client.
+websocket client class.
 
 We will take class BinanceFapiAsyncWs from
 repository [BinanceAsyncWebsocket](https://github.com/monk-after-90s/BinanceAsyncWebsocket.git) as example to
@@ -80,7 +80,7 @@ async def _parse_raw_data(self, raw_data):
 
 This method parse the raw data from the server to some format you wish.
 
-In our simple example, we parse the json string to the data of certain type.
+In our simple example, we parse the json string to the data of a certain type.
 
 ### Usage
 
