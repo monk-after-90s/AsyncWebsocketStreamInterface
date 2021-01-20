@@ -85,7 +85,7 @@ In our simple example, we parse the json string to the data of certain type.
 ### Usage
 
 After inheriting abstract methods, we would look to how to use our inheriting class. You may have already noticed that
-we have inherit 3 'private' methods, which we might not even find them in our IDEA hint. In fact, they are not methods
+we have inherit 3 'private' methods, which we might not even find them in our editor hint. In fact, they are not methods
 which you will call in your codes.
 
 #### stream_filter(_filters: list = None)
