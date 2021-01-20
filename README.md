@@ -5,7 +5,7 @@ websocket client.
 
 We will take class BinanceFapiAsyncWs from
 repository [BinanceAsyncWebsocket](https://github.com/monk-after-90s/BinanceAsyncWebsocket.git) as example to
-demonstrate the usage.
+demonstrate.
 
 ---
 
