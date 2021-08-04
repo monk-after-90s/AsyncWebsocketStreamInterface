@@ -95,7 +95,7 @@ asynchronous iterator. Whenever you want to set a coroutine to watch the websock
 
 ```python
 async def watcher():
-    stream = ws.filter_stream()
+    stream = ws.stream_filter()
     async for news in stream:
         print(news)
 ```
