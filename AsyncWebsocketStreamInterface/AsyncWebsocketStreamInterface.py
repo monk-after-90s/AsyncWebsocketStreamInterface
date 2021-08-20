@@ -25,6 +25,8 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
         self._handlers = set()
         # 更换ws连接时期和处理ws数据时期，刚开始是exchanging_ws时期
         AsyncExclusivePeriod.create_obj_periods(self, 'exchanging_ws', 'handing_ws')
+        # 报错即更换
+        self._error_lead2exchange_ws = asyncio.Event()
 
     async def _handle_wsq(self):
         '''
@@ -77,6 +79,11 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
                             pass
                 except:
                     logger.error('\n' + traceback.format_exc())
+        except:
+            self._error_lead2exchange_ws.set()
+            await asyncio.sleep(0)
+            self._error_lead2exchange_ws.clear()
+            logger.error('ERROR leads to update connection.\n' + traceback.format_exc(), )
         finally:
             logger.debug('Old connection abandoned.')
 
@@ -105,8 +112,9 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
             await AsyncExclusivePeriod.wait_enter_period(self, 'handing_ws')
             logger.debug('New ws connection opened.')
 
-            # 等待需要更新连接的信号
-            await self._when2create_new_ws()
+            # 等待需要更新连接的信号或者连接报错
+            await asyncio.wait(
+                [self._when2create_new_ws(), self._error_lead2exchange_ws.wait()], return_when='FIRST_COMPLETED')
             # 进入更换ws时期
             AsyncExclusivePeriod.set_obj_period(self, 'exchanging_ws')
 
