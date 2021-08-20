@@ -92,6 +92,8 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
         return self._wsq.present_ws
 
     async def send(self, msg):
+        while not self.present_ws:
+            await asyncio.sleep(0)
         await self.present_ws.send(msg)
 
     async def exit(self):
