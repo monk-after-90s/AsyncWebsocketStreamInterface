@@ -149,6 +149,10 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
                      _filters])) \
                     or not _filters:
                 ag.q.put_nowait(msg)
+                # too many data accumulated in the queue, no consumer
+                if ag.left >= 20:
+                    asyncio.create_task(ag.close())
+                    logger.debug(f'{repr(ag)} automatically closed.')
 
         self._handlers.add(handler)
         _close = ag.close
