@@ -80,6 +80,9 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
                             pass
                 except:
                     logger.error('\n' + traceback.format_exc())
+        except asyncio.CancelledError:
+            # print('忽略CancelledError')
+            pass
         except:
             if self._when2create_new_ws_task and 'handing_ws' == AsyncExclusivePeriod.get_obj_present_period(self):
                 self._when2create_new_ws_task.cancel()
