@@ -196,7 +196,8 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
     @abstractmethod
     async def _when2create_new_ws(self):
         '''
-        One time check to notice that it is time to exchange the ws.
+        When the coroutine is done,no matter raised error or not, it is time to exchange the ws.
+
         :return:
         '''
         pass
