@@ -9,7 +9,7 @@ from HuobiAsyncWebsocket_pro import HuobiAsyncWs
 import ccxt.async_support as ccxt
 
 if os.path.exists(os.path.join(os.path.dirname(__file__), 'key_secret.json')):
-    with open('key_secret.json') as f:
+    with open(os.path.join(os.path.dirname(__file__), 'key_secret.json')) as f:
         key_secret = json.load(f)
         test_apikey = key_secret['apikey']
         test_secret = key_secret['secret']
