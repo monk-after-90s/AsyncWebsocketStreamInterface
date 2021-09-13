@@ -21,12 +21,13 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
         self._wsq.present_ws: websockets.WebSocketClientProtocol = None
         self._wsq.previous_ws: websockets.WebSocketClientProtocol = None
         self._exiting = False
-        asyncio.create_task(self._ws_manager())
+        self._ws_manager_task = asyncio.create_task(self._ws_manager())
         self._handlers = set()
         # 更换ws连接时期和处理ws数据时期，刚开始是exchanging_ws时期
         AsyncExclusivePeriod.create_obj_periods(self, 'exchanging_ws', 'handing_ws')
         self._when2create_new_ws_task = None
         self._handle_raw_ws_msg_task = None
+        self._handle_wsq_task: asyncio.Task = None
 
     async def _handle_wsq(self):
         '''
@@ -100,13 +101,15 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
         await self.present_ws.send(msg)
 
     async def exit(self):
+        self._ws_manager_task.cancel()
+        self._handle_wsq_task.cancel()
         self._exiting = True
         if self._wsq.present_ws:
             await asyncio.create_task(self._wsq.present_ws.close())
 
     async def _ws_manager(self):
         # 启动ws连接队列的消息对接handlers处理任务
-        asyncio.create_task(self._handle_wsq())
+        self._handle_wsq_task = asyncio.create_task(self._handle_wsq())
         initail = True
         while not self._exiting or initail:
             initail = False
