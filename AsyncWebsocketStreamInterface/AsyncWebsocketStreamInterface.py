@@ -101,9 +101,9 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
         await self.present_ws.send(msg)
 
     async def exit(self):
+        self._exiting = True
         self._ws_manager_task.cancel()
         self._handle_wsq_task.cancel()
-        self._exiting = True
         if self._wsq.present_ws:
             await asyncio.create_task(self._wsq.present_ws.close())
 
