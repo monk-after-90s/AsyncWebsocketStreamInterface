@@ -112,21 +112,26 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
         self._handle_wsq_task = asyncio.create_task(self._handle_wsq())
         initail = True
         while not self._exiting or initail:
-            initail = False
-            new_ws = await self._create_ws()
-            # 更新连接
-            self._wsq.put_nowait(new_ws)
-            # wait until ws is exchanged.
-            await AsyncExclusivePeriod.wait_enter_period(self, 'handing_ws')
-            logger.debug('New ws connection opened.')
+            try:
+                initail = False
+                new_ws = await self._create_ws()
+                # 更新连接
+                self._wsq.put_nowait(new_ws)
+                # wait until ws is exchanged.
+                await AsyncExclusivePeriod.wait_enter_period(self, 'handing_ws')
+                logger.debug('New ws connection opened.')
 
-            # 等待需要更新连接的信号或者连接报错
-            self._when2create_new_ws_task = asyncio.create_task(self._when2create_new_ws())
-            await asyncio.wait([self._when2create_new_ws_task])
-            # 进入更换ws时期
-            AsyncExclusivePeriod.set_obj_period(self, 'exchanging_ws')
-            if self._handle_raw_ws_msg_task:
-                self._handle_raw_ws_msg_task.cancel()
+                # 等待需要更新连接的信号或者连接报错
+                self._when2create_new_ws_task = asyncio.create_task(self._when2create_new_ws())
+                await asyncio.wait([self._when2create_new_ws_task])
+                # 进入更换ws时期
+                AsyncExclusivePeriod.set_obj_period(self, 'exchanging_ws')
+                if self._handle_raw_ws_msg_task:
+                    self._handle_raw_ws_msg_task.cancel()
+            except asyncio.CancelledError:
+                raise
+            except:
+                await asyncio.create_task(asyncio.sleep(0))
 
     def stream_filter(self, _filters: list = None):
         '''
