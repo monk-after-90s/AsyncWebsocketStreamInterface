@@ -131,7 +131,7 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
             except asyncio.CancelledError:
                 raise
             except:
-                await asyncio.create_task(asyncio.sleep(0))
+                await asyncio.create_task(asyncio.sleep(1))
 
     def stream_filter(self, _filters: list = None):
         '''
