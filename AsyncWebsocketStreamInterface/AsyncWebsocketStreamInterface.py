@@ -124,6 +124,7 @@ class AsyncWebsocketStreamInterface(metaclass=ABCMeta):
                 # 等待需要更新连接的信号或者连接报错
                 self._when2create_new_ws_task = asyncio.create_task(self._when2create_new_ws())
                 await asyncio.wait([self._when2create_new_ws_task])
+                await asyncio.create_task(asyncio.sleep(1))
                 # 进入更换ws时期
                 AsyncExclusivePeriod.set_obj_period(self, 'exchanging_ws')
                 if self._handle_raw_ws_msg_task:
