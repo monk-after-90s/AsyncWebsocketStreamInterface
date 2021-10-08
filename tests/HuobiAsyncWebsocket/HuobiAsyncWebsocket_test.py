@@ -145,6 +145,7 @@ class CommonTest(AsyncTestCase):
         :return:
         '''
         open_order_tasks = [asyncio.create_task(type(self).huobi.create_order('BTC/USDT', 'limit', 'buy', 0.001, 5000))
+                            # fixme 动态使用价格
                             for _ in range(10)]
         all_order_stream = type(self).aws.all_order_stream()
         n = 0
